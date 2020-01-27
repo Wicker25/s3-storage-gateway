@@ -1,7 +1,6 @@
-upstream balancer {
-    least_conn;
-    server minio:9000;
-    server ${AWS_ENDPOINT_URL};
+upstream backend {
+    server minio:9000 fail_timeout=5s max_fails=3;
+    server ${AWS_ENDPOINT_URL} backup;
 }
 
 server {
@@ -9,6 +8,6 @@ server {
 
     location / {
         proxy_set_header Host $host:$server_port;
-        proxy_pass       http://balancer;
+        proxy_pass       http://backend;
     }
 }
