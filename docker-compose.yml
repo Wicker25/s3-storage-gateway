@@ -1,0 +1,40 @@
+version: '3'
+services:
+  nginx:
+    image: nginx:1.17
+    volumes:
+      - ./nginx/conf.d/:/etc/nginx/conf.d/
+    networks:
+      - internal-network
+    ports:
+      - 9080:9080
+    depends_on:
+      - minio
+  minio:
+    image: minio/minio
+    expose:
+      - 9000
+    volumes:
+      - ./storage:/storage
+    networks:
+      - internal-network
+    environment:
+      MINIO_ACCESS_KEY: sg_access_key
+      MINIO_SECRET_KEY: sg_secret_key
+      MINIO_CACHE: 'on'
+      MINIO_CACHE_DRIVES: '/storage'
+      MINIO_CACHE_EXPIRY: 365
+      MINIO_CACHE_EXCLUDE: '*.pdf'
+      MINIO_CACHE_QUOTA: 100
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+    command: minio gateway s3
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:9000/minio/health/live']
+      interval: 30s
+      timeout: 20s
+networks:
+  internal-network:
+    driver: bridge
+volumes:
+  storage:
