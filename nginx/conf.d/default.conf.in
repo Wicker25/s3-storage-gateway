@@ -1,0 +1,14 @@
+upstream balancer {
+    least_conn;
+    server minio:9000;
+    server ${AWS_ENDPOINT_URL};
+}
+
+server {
+    listen 9080;
+
+    location / {
+        proxy_set_header Host $host:$server_port;
+        proxy_pass       http://balancer;
+    }
+}

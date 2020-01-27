@@ -1,2 +1,3 @@
 .idea/
+/nginx/conf.d/default.conf
 !/storage/.gitkeep
