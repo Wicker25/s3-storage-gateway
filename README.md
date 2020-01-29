@@ -8,6 +8,8 @@ TODO
 ## Getting started
 
 ```
+$ docker-compose build
+
 $ AWS_ACCESS_KEY_ID='xxxxxx' \
   AWS_SECRET_ACCESS_KEY='xxxxxx' \
   AWS_ENDPOINT_URL='s3.us-east-2.amazonaws.com' \

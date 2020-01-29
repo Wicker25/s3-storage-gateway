@@ -1,42 +1,48 @@
 version: '3'
 services:
   nginx:
-    image: nginx:1.17
+    build: ./nginx
     volumes:
       - ./nginx/conf.d/:/etc/nginx/conf.d/
-      - ./nginx/entrypoint.sh:/entrypoint.sh
     networks:
       - internal-network
-    environment:
-      AWS_ENDPOINT_URL: ${AWS_ENDPOINT_URL}
     ports:
       - 9080:9080
-    entrypoint: /entrypoint.sh
+    environment:
+      AWS_ENDPOINT_URL: ${AWS_ENDPOINT_URL}
+    entrypoint: /bin/wait-for-it.sh -t 0 minio:9000 -- /entrypoint.sh
     depends_on:
       - minio
-  minio:
-    image: minio/minio
+  etcd:
+    image: bitnami/etcd
+    networks:
+      - internal-network
     expose:
-      - 9000
+      - 2379
+    environment:
+      ALLOW_NONE_AUTHENTICATION: 'yes'
+  minio:
+    build: ./minio
     volumes:
       - ./storage:/storage
     networks:
       - internal-network
+    expose:
+      - 9000
     environment:
       MINIO_ACCESS_KEY: sg_access_key
       MINIO_SECRET_KEY: sg_secret_key
+      MINIO_ETCD_ENDPOINTS: http://etcd:2379
       MINIO_CACHE: 'on'
-      MINIO_CACHE_DRIVES: '/storage'
+      MINIO_CACHE_DRIVES: /storage
       MINIO_CACHE_EXPIRY: 365
       MINIO_CACHE_EXCLUDE: '*.pdf'
       MINIO_CACHE_QUOTA: 100
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
-    command: minio gateway s3
-    healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:9000/minio/health/live']
-      interval: 30s
-      timeout: 20s
+    entrypoint: /bin/wait-for-it.sh -t 0 etcd:2379 -- minio gateway s3
+    depends_on:
+      - etcd
 networks:
   internal-network:
     driver: bridge
