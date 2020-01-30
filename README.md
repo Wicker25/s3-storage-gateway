@@ -1,4 +1,4 @@
-# \[POC\] S3 Origin Shield
+# \[POC\] S3 Storage Gateway
 
 
 ## Introduction
@@ -64,7 +64,7 @@ Then, apply the policy to them:
 $ mc admin policy set storage provider-policy user=<ACCESS_KEY>
 ```
 
-## Test the Origin Shield with `aws-cli`
+## Test the Storage Gateway with `aws-cli`
 
 Start configuring your client with the Origin's credentials:
 
