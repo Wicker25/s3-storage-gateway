@@ -1,9 +1,9 @@
 version: '3'
 services:
   nginx:
-    build: ./nginx
+    build: ./docker/nginx
     volumes:
-      - ./nginx/conf.d/:/etc/nginx/conf.d/
+      - ./docker/nginx/conf.d/:/etc/nginx/conf.d/
     networks:
       - internal-network
     ports:
@@ -22,7 +22,7 @@ services:
     environment:
       ALLOW_NONE_AUTHENTICATION: 'yes'
   minio:
-    build: ./minio
+    build: ./docker/minio
     volumes:
       - ./storage:/storage
     networks:
@@ -30,8 +30,8 @@ services:
     expose:
       - 9000
     environment:
-      MINIO_ACCESS_KEY: sg_access_key
-      MINIO_SECRET_KEY: sg_secret_key
+      MINIO_ACCESS_KEY: ${ROOT_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${ROOT_SECRET_KEY}
       MINIO_ETCD_ENDPOINTS: http://etcd:2379
       MINIO_CACHE: 'on'
       MINIO_CACHE_DRIVES: /storage
@@ -43,6 +43,28 @@ services:
     entrypoint: /bin/wait-for-it.sh -t 0 etcd:2379 -- minio gateway s3
     depends_on:
       - etcd
+  bootstrapper:
+    build: ./docker/bootstrapper
+    volumes:
+      - ./configs:/configs
+    networks:
+      - internal-network
+    environment:
+      ROOT_ACCESS_KEY: ${ROOT_ACCESS_KEY}
+      ROOT_SECRET_KEY: ${ROOT_SECRET_KEY}
+      ACCESS_KEY_1: ${ACCESS_KEY_1}
+      SECRET_KEY_1: ${SECRET_KEY_1}
+      ACCESS_KEY_2: ${ACCESS_KEY_2}
+      SECRET_KEY_2: ${SECRET_KEY_2}
+      ACCESS_KEY_3: ${ACCESS_KEY_3}
+      SECRET_KEY_3: ${SECRET_KEY_3}
+      ACCESS_KEY_4: ${ACCESS_KEY_4}
+      SECRET_KEY_4: ${SECRET_KEY_4}
+      ACCESS_KEY_5: ${ACCESS_KEY_5}
+      SECRET_KEY_5: ${SECRET_KEY_5}
+    entrypoint: /bin/wait-for-it.sh -t 0 minio:9000 -- /entrypoint.sh
+    depends_on:
+      - minio
 networks:
   internal-network:
     driver: bridge

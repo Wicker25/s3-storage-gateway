@@ -1,3 +1,5 @@
 .idea/
-/nginx/conf.d/default.conf
+/docker/nginx/conf.d/default.conf
+!/configs/.gitkeep
 !/storage/.gitkeep
+/.env
