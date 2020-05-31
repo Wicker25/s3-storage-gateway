@@ -3,7 +3,7 @@
 
 ## Introduction
 
-TODO
+![storage gateway diagram](https://github.com/Wicker25/s3-storage-gateway/raw/master/docs/storage-gateway.png)
 
 ## Getting started
 
